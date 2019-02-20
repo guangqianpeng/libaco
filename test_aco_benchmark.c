@@ -26,13 +26,17 @@ aco_cofuncp_t gl_co_fp;
 #define PRINT_BUF_SZ 64
 char gl_benchmark_print_str_buf[64];
 
+void do_not_optimize(void* value) {
+  asm volatile("" : : "r,m"(value) : "memory");
+}
+
 void co_fp_alloca(){
     size_t sz = (size_t)((uintptr_t)aco_get_arg());
     uint8_t* ptr = NULL;
     assert(sz > 0);
     ptr = alloca(sz);
     assertptr(ptr);
-    memset(ptr, 0, sz);
+    do_not_optimize(ptr);
     while(1){
         aco_yield();
     }
@@ -41,7 +45,7 @@ void co_fp_alloca(){
 
 void co_fp_stksz_128(){
     int ip[28];
-    memset(ip, 1, sizeof(ip));
+    do_not_optimize(ip);
     while(1){
         aco_yield();
     }
@@ -50,7 +54,7 @@ void co_fp_stksz_128(){
 
 void co_fp_stksz_64(){
     int ip[12];
-    memset(ip, 1, sizeof(ip));
+    do_not_optimize(ip);        
     while(1){
         aco_yield();
     }
@@ -59,7 +63,7 @@ void co_fp_stksz_64(){
 
 void co_fp_stksz_40(){
     int ip[8];
-    memset(ip, 1, sizeof(ip));
+    do_not_optimize(ip);
     while(1){
         aco_yield();
     }
@@ -68,7 +72,7 @@ void co_fp_stksz_40(){
 
 void co_fp_stksz_24(){
     int ip[4];
-    memset(ip, 1, sizeof(ip));
+    do_not_optimize(ip);    
     while(1){
         aco_yield();
     }
