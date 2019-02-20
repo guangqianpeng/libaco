@@ -12,33 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-OUTPUT_DIR="./output"
-CFLAGS="-g -O2 -Wall -Werror"
-#EXTRA_CFLAGS=""
-OUTPUT_SUFFIX=""
-makecc="cc"
-if [ "$CC" ]
-then
-    makecc="$CC"
-fi
-
-app_list='''
-test_aco_tutorial_0
-test_aco_tutorial_1
-test_aco_tutorial_2
-test_aco_tutorial_3 -lpthread
-test_aco_tutorial_4
-test_aco_tutorial_5
-test_aco_tutorial_6
-test_aco_synopsis
-test_aco_benchmark
-'''
+SOURCE_DIR=`pwd`
+BUILD_DIR=${SOURCE_DIR}/build
 
 gl_opt_no_m32=""
 gl_opt_no_valgrind=""
 
-OUTPUT_DIR="$OUTPUT_DIR""//file"
-OUTPUT_DIR=`dirname "$OUTPUT_DIR"`
+cmd_m32=""
+cmd_share_fpu_mxcsr_env=""
+cmd_use_valgrind=""
 
 gl_trap_str=""
 
@@ -66,66 +48,34 @@ function untra(){
 }
 
 function build_f(){
-    declare file
-    declare cflags
     declare build_cmd
-    declare tmp_ret
     declare skip_flag
-    echo "OUTPUT_DIR:       $OUTPUT_DIR"
-    echo "CFLAGS:           $CFLAGS"
-    echo "EXTRA_CFLAGS:     $EXTRA_CFLAGS"
-    echo "ACO_EXTRA_CFLAGS: $ACO_EXTRA_CFLAGS"
-    echo "OUTPUT_SUFFIX:    $OUTPUT_SUFFIX"
-    echo "$app_list" | grep -Po '.+$' | while read read_in
-    do
-        file=`echo $read_in | grep -Po "^[^\s]+"`
-        cflags=`echo $read_in | sed -r 's/^\s*([^ ]+)(.*)$/\2/'`
-        if [ -z "$file" ] 
+
+    build_cmd="cmake $ACO_EXTRA_CFLAGS $SOURCE_DIR"
+
+    skip_flag=""
+    if [ "$gl_opt_no_m32" ]
+    then
+        if [ "$cmd_m32" ]
         then
-            continue  
+            skip_flag="true"
         fi
-        #echo "<$file>:<$cflags>:$OUTPUT_DIR:$CFLAGS:$EXTRA_CFLAGS:$OUTPUT_SUFFIX"
-        build_cmd="$makecc $CFLAGS $ACO_EXTRA_CFLAGS $EXTRA_CFLAGS acosw.S aco.c $file.c $cflags -o $OUTPUT_DIR/$file$OUTPUT_SUFFIX"
-        skip_flag=""
-        if [ "$gl_opt_no_m32" ]
+    fi
+    if [ "$gl_opt_no_valgrind" ]
+    then
+        if ["$cmd_use_valgrind"]
         then
-            echo "$OUTPUT_SUFFIX" | grep -P "\bm32\b" &>/dev/null
-            tmp_ret=$?
-            if [ "$tmp_ret" -eq "0" ]
-            then
-                skip_flag="true"
-            elif [ "$tmp_ret" -eq "1" ]
-            then
-                :
-            else
-                error "grep failed: $tmp_ret"
-                exit $tmp_ret
-            fi
+            skip_flag="true"
         fi
-        if [ "$gl_opt_no_valgrind" ]
-        then
-            echo "$OUTPUT_SUFFIX" | grep -P "\bvalgrind\b" &>/dev/null
-            tmp_ret=$?
-            if [ "$tmp_ret" -eq "0" ]
-            then
-                skip_flag="true"
-            elif [ "$tmp_ret" -eq "1" ]
-            then
-                :
-            else
-                error "grep failed: $tmp_ret"
-                exit $tmp_ret
-            fi
-        fi
-        if [ "$skip_flag" ]
-        then
-            echo "skip    $build_cmd"
-        else
-            echo "        $build_cmd"
-            $build_cmd
-            assert "build fail"
-        fi
-    done
+    fi
+    if [ "$skip_flag" ]
+    then
+        echo "skip    $build_cmd"
+    else
+        echo "        $build_cmd"
+        $build_cmd && make
+        assert "build fail"
+    fi
     assert "exit"
 }
 
@@ -133,6 +83,8 @@ function usage() {
     echo "Usage: $0 [-o <no-m32|no-valgrind>] [-h]" 1>&2
     echo '''
 Example:
+    # clean build directory
+    bash make.sh clean
     # default build
     bash make.sh
     # build without the i386 binary output
@@ -155,6 +107,10 @@ while getopts ":o:h" o; do
             elif [ "$gl_opt_value" = "no-valgrind" ]
             then
                 gl_opt_no_valgrind="true"
+            elif [ "$gl_opt_value" = "clean" ]
+            then
+                rm -rf $BUILD_DIR
+                exit 0
             else
                 usage
                 error unknow option value of '-o'
@@ -178,37 +134,33 @@ shift $((OPTIND-1))
 #echo "gl_opt_no_valgrind:$gl_opt_no_valgrind"
 #echo "gl_opt_no_m32:$gl_opt_no_m32"
 
-if [ -e "$OUTPUT_DIR" ]
-then
-    if [ -d "$OUTPUT_DIR" ]
-    then
-        :
-    else
-        error "\"$OUTPUT_DIR\" is not a directory"
-        exit 1
-    fi
-else
-    error "directory \"$OUTPUT_DIR\" doesn't exist"
-    exit 1
-fi
-
 tra "echo;echo build has been interrupted"
+
+mkdir -p $BUILD_DIR && cd $BUILD_DIR
 
 # the matrix of the build config for later testing
 # -m32 -DACO_CONFIG_SHARE_FPU_MXCSR_ENV -DACO_USE_VALGRIND
 # 0 0 0
-ACO_EXTRA_CFLAGS="" OUTPUT_SUFFIX="..no_valgrind.standaloneFPUenv" build_f
+cmd_m32="" cmd_share_fpu_mxcsr_env="" cmd_use_valgrind=""
+ACO_EXTRA_CFLAGS="" build_f
 # 0 0 1
-ACO_EXTRA_CFLAGS="-DACO_USE_VALGRIND" OUTPUT_SUFFIX="..valgrind.standaloneFPUenv" build_f
+cmd_m32="" cmd_share_fpu_mxcsr_env="" cmd_use_valgrind="true"
+ACO_EXTRA_CFLAGS="-DACO_USE_VALGRIND=ON" build_f
 # 0 1 0
-ACO_EXTRA_CFLAGS="-DACO_CONFIG_SHARE_FPU_MXCSR_ENV" OUTPUT_SUFFIX="..no_valgrind.shareFPUenv" build_f
+cmd_m32="" cmd_share_fpu_mxcsr_env="true" cmd_use_valgrind=""
+ACO_EXTRA_CFLAGS="-DACO_CONFIG_SHARE_FPU_MXCSR_ENV=ON" build_f
 # 0 1 1
-ACO_EXTRA_CFLAGS="-DACO_CONFIG_SHARE_FPU_MXCSR_ENV -DACO_USE_VALGRIND" OUTPUT_SUFFIX="..valgrind.shareFPUenv" build_f
+cmd_m32="" cmd_share_fpu_mxcsr_env="true" cmd_use_valgrind="true"
+ACO_EXTRA_CFLAGS="-DACO_CONFIG_SHARE_FPU_MXCSR_ENV=ON -DACO_USE_VALGRIND=ON" build_f
 # 1 0 0
-ACO_EXTRA_CFLAGS="-m32" OUTPUT_SUFFIX="..m32.no_valgrind.standaloneFPUenv" build_f
+cmd_m32="true" cmd_share_fpu_mxcsr_env="" cmd_use_valgrind=""
+ACO_EXTRA_CFLAGS="-DACO_BUILD_M32=ON" build_f
 # 1 0 1
-ACO_EXTRA_CFLAGS="-m32 -DACO_USE_VALGRIND" OUTPUT_SUFFIX="..m32.valgrind.standaloneFPUenv" build_f
+cmd_m32="true" cmd_share_fpu_mxcsr_env="" cmd_use_valgrind="true"
+ACO_EXTRA_CFLAGS="-DACO_BUILD_M32=ON -DACO_USE_VALGRIND=ON" build_f
 # 1 1 0
-ACO_EXTRA_CFLAGS="-m32 -DACO_CONFIG_SHARE_FPU_MXCSR_ENV" OUTPUT_SUFFIX="..m32.no_valgrind.shareFPUenv" build_f
+cmd_m32="true" cmd_share_fpu_mxcsr_env="true" cmd_use_valgrind=""
+ACO_EXTRA_CFLAGS="-DACO_BUILD_M32=ON -DACO_CONFIG_SHARE_FPU_MXCSR_ENV=ON" build_f
 # 1 1 1
-ACO_EXTRA_CFLAGS="-m32 -DACO_CONFIG_SHARE_FPU_MXCSR_ENV -DACO_USE_VALGRIND" OUTPUT_SUFFIX="..m32.valgrind.shareFPUenv" build_f
+cmd_m32="true" cmd_share_fpu_mxcsr_env="true" cmd_use_valgrind="true"
+ACO_EXTRA_CFLAGS="-DACO_BUILD_M32=ON -DACO_CONFIG_SHARE_FPU_MXCSR_ENV=ON -DACO_USE_VALGRIND=ON" build_f
