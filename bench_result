@@ -1,3 +1,5 @@
+(no tcmalloc)
+(short_aligned_memcpy enabled)
 2019-02-22 13:47:24
 Running ./output/test_aco_benchmark2..no_valgrind.shareFPUenv
 Run on (4 X 3200 MHz CPU s)
@@ -48,7 +50,8 @@ AcoFixture/BM_aco_resume/10000/1024          226 ns          226 ns      3121500
 AcoFixture/BM_aco_resume/100000/1024         271 ns          271 ns      2468185 aco_amount= 100000 copy_stack_size=1080B
 AcoFixture/BM_aco_resume/1000000/1024        276 ns          276 ns      2506831 aco_amount=1000000 copy_stack_size=1080B
 
-(use tcmalloc)
+(tcmalloc)
+(short_aligned_memcpy enabled)
 Running ./output/test_aco_benchmark2..no_valgrind.shareFPUenv
 Run on (4 X 3200 MHz CPU s)
 CPU Caches:
@@ -97,3 +100,54 @@ AcoFixture/BM_aco_resume/1000/1024           87.2 ns         87.2 ns      649419
 AcoFixture/BM_aco_resume/10000/1024           300 ns          300 ns      1809244 aco_amount=  10000 copy_stack_size=1080B
 AcoFixture/BM_aco_resume/100000/1024          253 ns          253 ns      2886198 aco_amount= 100000 copy_stack_size=1080B
 AcoFixture/BM_aco_resume/1000000/1024         694 ns          694 ns      1000000 aco_amount=1000000 copy_stack_size=1080B
+
+(tcmalloc)
+(short_aligned_memcpy disabled))
+2019-02-22 17:37:11
+Running ./test_aco_benchmark2..no_valgrind.shareFPUenv
+Run on (4 X 3200 MHz CPU s)
+CPU Caches:
+  L1 Data 32K (x4)
+  L1 Instruction 32K (x4)
+  L2 Unified 256K (x4)
+  L3 Unified 6144K (x1)
+Load Average: 0.42, 0.62, 0.63
+---------------------------------------------------------------------------------
+Benchmark                                       Time             CPU   Iterations
+---------------------------------------------------------------------------------
+BM_aco_create                                38.7 ns         38.7 ns     17339847
+AcoFixture/BM_bench_overhead/1000000/1       1.32 ns         1.32 ns    515891051 benchmark overhead
+AcoFixture/BM_aco_resume/1/1                 21.8 ns         21.8 ns     30932491 aco_amount=      1 copy_stack_size=   0B
+AcoFixture/BM_aco_resume/10/1                30.5 ns         30.5 ns     22417378 aco_amount=     10 copy_stack_size=  56B
+AcoFixture/BM_aco_resume/100/1               30.9 ns         30.9 ns     21248748 aco_amount=    100 copy_stack_size=  56B
+AcoFixture/BM_aco_resume/1000/1              31.8 ns         31.8 ns     20468064 aco_amount=   1000 copy_stack_size=  56B
+AcoFixture/BM_aco_resume/10000/1             32.3 ns         32.3 ns     20121938 aco_amount=  10000 copy_stack_size=  56B
+AcoFixture/BM_aco_resume/100000/1            36.1 ns         36.1 ns     19825059 aco_amount= 100000 copy_stack_size=  56B
+AcoFixture/BM_aco_resume/1000000/1           38.4 ns         38.4 ns     18514209 aco_amount=1000000 copy_stack_size=  56B
+AcoFixture/BM_aco_resume/1/10                21.8 ns         21.8 ns     31132149 aco_amount=      1 copy_stack_size=   0B
+AcoFixture/BM_aco_resume/10/10               33.5 ns         33.5 ns     20378070 aco_amount=     10 copy_stack_size=  72B
+AcoFixture/BM_aco_resume/100/10              34.4 ns         34.4 ns     19061145 aco_amount=    100 copy_stack_size=  72B
+AcoFixture/BM_aco_resume/1000/10             36.2 ns         36.2 ns     18131719 aco_amount=   1000 copy_stack_size=  72B
+AcoFixture/BM_aco_resume/10000/10            37.2 ns         37.2 ns     17836253 aco_amount=  10000 copy_stack_size=  72B
+AcoFixture/BM_aco_resume/100000/10           44.1 ns         44.1 ns     12393227 aco_amount= 100000 copy_stack_size=  72B
+AcoFixture/BM_aco_resume/1000000/10          48.4 ns         48.4 ns     14655299 aco_amount=1000000 copy_stack_size=  72B
+AcoFixture/BM_aco_resume/1/100               21.8 ns         21.8 ns     31001289 aco_amount=      1 copy_stack_size=   0B
+AcoFixture/BM_aco_resume/10/100              39.3 ns         39.3 ns     17001146 aco_amount=     10 copy_stack_size= 168B
+AcoFixture/BM_aco_resume/100/100             41.2 ns         41.2 ns     16561672 aco_amount=    100 copy_stack_size= 168B
+AcoFixture/BM_aco_resume/1000/100            43.4 ns         43.4 ns     16409762 aco_amount=   1000 copy_stack_size= 168B
+AcoFixture/BM_aco_resume/10000/100           44.2 ns         44.2 ns     15448750 aco_amount=  10000 copy_stack_size= 168B
+AcoFixture/BM_aco_resume/100000/100          56.8 ns         56.7 ns     12110931 aco_amount= 100000 copy_stack_size= 168B
+AcoFixture/BM_aco_resume/1000000/100          121 ns          121 ns     11388415 aco_amount=1000000 copy_stack_size= 168B
+AcoFixture/BM_aco_resume/1/1000              26.4 ns         26.4 ns     28781609 aco_amount=      1 copy_stack_size=   0B
+AcoFixture/BM_aco_resume/10/1000             65.8 ns         65.8 ns      8900888 aco_amount=     10 copy_stack_size=1064B
+AcoFixture/BM_aco_resume/100/1000             138 ns          138 ns      5406091 aco_amount=    100 copy_stack_size=1064B
+AcoFixture/BM_aco_resume/1000/1000            128 ns          128 ns      9055461 aco_amount=   1000 copy_stack_size=1064B
+AcoFixture/BM_aco_resume/10000/1000           234 ns          234 ns      2604708 aco_amount=  10000 copy_stack_size=1064B
+AcoFixture/BM_aco_resume/100000/1000          274 ns          274 ns      2488383 aco_amount= 100000 copy_stack_size=1064B
+AcoFixture/BM_aco_resume/1000000/1000         274 ns          274 ns      2665188 aco_amount=1000000 copy_stack_size=1064B
+AcoFixture/BM_aco_resume/1/1024              23.0 ns         23.0 ns     29331022 aco_amount=      1 copy_stack_size=   0B
+AcoFixture/BM_aco_resume/10/1024             70.6 ns         70.6 ns      9929366 aco_amount=     10 copy_stack_size=1080B
+AcoFixture/BM_aco_resume/100/1024             116 ns          115 ns      4815823 aco_amount=    100 copy_stack_size=1080B
+AcoFixture/BM_aco_resume/1000/1024           90.7 ns         90.6 ns      6790123 aco_amount=   1000 copy_stack_size=1080B
+AcoFixture/BM_aco_resume/10000/1024           229 ns          229 ns      2633092 aco_amount=  10000 copy_stack_size=1080B
+AcoFixture/BM_aco_resume/100000/1024          274 ns          274 ns      2496504 aco_amount= 100000 copy_stack_size=1080B
