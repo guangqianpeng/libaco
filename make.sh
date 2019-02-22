@@ -63,7 +63,7 @@ function build_f(){
     fi
     if [ "$gl_opt_no_valgrind" ]
     then
-        if ["$cmd_use_valgrind"]
+        if [ "$cmd_use_valgrind" ]
         then
             skip_flag="true"
         fi
@@ -107,10 +107,6 @@ while getopts ":o:h" o; do
             elif [ "$gl_opt_value" = "no-valgrind" ]
             then
                 gl_opt_no_valgrind="true"
-            elif [ "$gl_opt_value" = "clean" ]
-            then
-                rm -rf $BUILD_DIR
-                exit 0
             else
                 usage
                 error unknow option value of '-o'
@@ -130,6 +126,14 @@ while getopts ":o:h" o; do
 done
 shift $((OPTIND-1))
 
+subcommand=$1; shift
+case "$subcommand" in
+    clean)
+        rm -rf $BUILD_DIR
+        exit 0
+        ;;
+esac
+
 #echo "o = $gl_opt_value"
 #echo "gl_opt_no_valgrind:$gl_opt_no_valgrind"
 #echo "gl_opt_no_m32:$gl_opt_no_m32"
@@ -142,25 +146,30 @@ mkdir -p $BUILD_DIR && cd $BUILD_DIR
 # -m32 -DACO_CONFIG_SHARE_FPU_MXCSR_ENV -DACO_USE_VALGRIND
 # 0 0 0
 cmd_m32="" cmd_share_fpu_mxcsr_env="" cmd_use_valgrind=""
-ACO_EXTRA_CFLAGS="" build_f
+ACO_EXTRA_CFLAGS="-DACO_BUILD_M32=OFF -DACO_CONFIG_SHARE_FPU_MXCSR_ENV=OFF -DACO_USE_VALGRIND=OFF" build_f
 # 0 0 1
 cmd_m32="" cmd_share_fpu_mxcsr_env="" cmd_use_valgrind="true"
-ACO_EXTRA_CFLAGS="-DACO_USE_VALGRIND=ON" build_f
+ACO_EXTRA_CFLAGS="-DACO_BUILD_M32=OFF -DACO_CONFIG_SHARE_FPU_MXCSR_ENV=OFF -DACO_USE_VALGRIND=ON" build_f
 # 0 1 0
 cmd_m32="" cmd_share_fpu_mxcsr_env="true" cmd_use_valgrind=""
-ACO_EXTRA_CFLAGS="-DACO_CONFIG_SHARE_FPU_MXCSR_ENV=ON" build_f
+ACO_EXTRA_CFLAGS="-DACO_BUILD_M32=OFF -DACO_CONFIG_SHARE_FPU_MXCSR_ENV=ON -DACO_USE_VALGRIND=OFF" build_f
+
 # 0 1 1
 cmd_m32="" cmd_share_fpu_mxcsr_env="true" cmd_use_valgrind="true"
-ACO_EXTRA_CFLAGS="-DACO_CONFIG_SHARE_FPU_MXCSR_ENV=ON -DACO_USE_VALGRIND=ON" build_f
+ACO_EXTRA_CFLAGS="-DACO_BUILD_M32=OFF -DACO_CONFIG_SHARE_FPU_MXCSR_ENV=ON -DACO_USE_VALGRIND=ON" build_f
+
 # 1 0 0
 cmd_m32="true" cmd_share_fpu_mxcsr_env="" cmd_use_valgrind=""
-ACO_EXTRA_CFLAGS="-DACO_BUILD_M32=ON" build_f
+ACO_EXTRA_CFLAGS="-DACO_BUILD_M32=ON -DACO_CONFIG_SHARE_FPU_MXCSR_ENV=OFF -DACO_USE_VALGRIND=OFF" build_f
+
 # 1 0 1
 cmd_m32="true" cmd_share_fpu_mxcsr_env="" cmd_use_valgrind="true"
-ACO_EXTRA_CFLAGS="-DACO_BUILD_M32=ON -DACO_USE_VALGRIND=ON" build_f
+ACO_EXTRA_CFLAGS="-DACO_BUILD_M32=ON -DACO_CONFIG_SHARE_FPU_MXCSR_ENV=OFF -DACO_USE_VALGRIND=ON" build_f
+
 # 1 1 0
 cmd_m32="true" cmd_share_fpu_mxcsr_env="true" cmd_use_valgrind=""
-ACO_EXTRA_CFLAGS="-DACO_BUILD_M32=ON -DACO_CONFIG_SHARE_FPU_MXCSR_ENV=ON" build_f
+ACO_EXTRA_CFLAGS="-DACO_BUILD_M32=ON -DACO_CONFIG_SHARE_FPU_MXCSR_ENV=ON -DACO_USE_VALGRIND=OFF" build_f
+
 # 1 1 1
 cmd_m32="true" cmd_share_fpu_mxcsr_env="true" cmd_use_valgrind="true"
 ACO_EXTRA_CFLAGS="-DACO_BUILD_M32=ON -DACO_CONFIG_SHARE_FPU_MXCSR_ENV=ON -DACO_USE_VALGRIND=ON" build_f
